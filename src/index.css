@@ -193,39 +193,43 @@ body {
   background-color: #fdfaf3;
 
   background-image:
-    /* Blue stays only at the very top, under the wordmark and title, so
-       the type reads against a cool ground it belongs to.
-       Uses a light sky blue rather than the deep #183c90: a dark navy at
-       low alpha over the warm base desaturates to grey (measured sat=0)
-       instead of reading blue. A light tint keeps its hue. */
+    /* Warm top corner, so the page opens warm rather than cool. Kept
+       lighter than the base of the page: the blue wordmark and title sit
+       here and need the quietest ground on the screen. */
     radial-gradient(
-      ellipse 92% 32% at 32% -6%,
-      rgba(120, 180, 240, 0.34) 0%,
+      ellipse 80% 34% at 88% -8%,
+      rgba(252, 196, 24, 0.16) 0%,
       transparent 76%
     ),
-    /* Yellow: the dominant warm field, sweeping up from the bottom. */
+    /* A softer warm note on the opposite top corner, behind the logo. */
     radial-gradient(
-      ellipse 96% 62% at 78% 106%,
-      rgba(252, 216, 0, 0.3) 0%,
+      ellipse 56% 26% at 2% -4%,
+      rgba(252, 176, 12, 0.12) 0%,
       transparent 74%
     ),
-    /* Orange: sits inside the yellow like the logo's inner ring. */
+    /* Yellow: the dominant field, strongest low and sweeping upward. */
     radial-gradient(
-      ellipse 70% 46% at 96% 88%,
-      rgba(252, 152, 8, 0.24) 0%,
-      transparent 72%
+      ellipse 104% 66% at 74% 106%,
+      rgba(252, 216, 0, 0.34) 0%,
+      transparent 76%
+    ),
+    /* Orange inside the yellow, like the logo's inner ring. */
+    radial-gradient(
+      ellipse 74% 48% at 98% 86%,
+      rgba(252, 152, 8, 0.26) 0%,
+      transparent 74%
     ),
     /* Orange on the opposite low corner so the band spans the width
        rather than pooling on one side. */
     radial-gradient(
-      ellipse 58% 40% at 6% 98%,
-      rgba(252, 176, 12, 0.16) 0%,
+      ellipse 62% 42% at 4% 100%,
+      rgba(252, 176, 12, 0.2) 0%,
       transparent 74%
     ),
     /* Red arc, the outermost warm note - kept low so it tints rather
        than turning the corner pink. */
     radial-gradient(
-      ellipse 46% 34% at 104% 58%,
+      ellipse 46% 34% at 104% 56%,
       rgba(228, 24, 36, 0.08) 0%,
       transparent 74%
     );
