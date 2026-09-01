@@ -175,18 +175,51 @@ body {
 }
 
 /* Soft tinted wash behind the launcher. Painted once, never animated,
-   so it costs the GPU nothing after first composite. */
+   so it costs the GPU nothing after first composite.
+
+   The logo is a warm disc (yellow -> orange -> red) inside a cool blue
+   wordmark, so the wash carries both temperatures rather than blue
+   alone: blue anchors the top-left where the mark sits, and the warm
+   tones sweep the opposite corner. Alphas are deliberately low - this
+   should register as a tint on white, not as a coloured background.
+   Above ~0.10 the warm tones start fighting the artwork on the cards. */
 .bg-brand-ambient {
   background-image:
+    /* warm halo behind the logo, echoing the disc it sits on */
     radial-gradient(
-      ellipse 65% 50% at 12% 0%,
-      rgba(47, 116, 196, 0.12) 0%,
+      ellipse 34% 26% at 4% 2%,
+      rgba(252, 180, 12, 0.07) 0%,
       transparent 70%
     ),
+    /* cool: top-left, anchoring the wordmark */
     radial-gradient(
-      ellipse 55% 45% at 95% 100%,
-      rgba(255, 216, 0, 0.1) 0%,
-      transparent 70%
+      ellipse 70% 52% at 14% 2%,
+      rgba(24, 60, 144, 0.09) 0%,
+      transparent 72%
+    ),
+    /* cool counterweight on the opposite side, keeps blue dominant */
+    radial-gradient(
+      ellipse 55% 40% at 100% 24%,
+      rgba(24, 60, 144, 0.05) 0%,
+      transparent 72%
+    ),
+    /* warm core: yellow, low and wide so it is a wash not a blob */
+    radial-gradient(
+      ellipse 78% 52% at 88% 104%,
+      rgba(252, 216, 0, 0.09) 0%,
+      transparent 76%
+    ),
+    /* warm mid: orange, offset to read as a band */
+    radial-gradient(
+      ellipse 62% 44% at 52% 100%,
+      rgba(252, 180, 12, 0.06) 0%,
+      transparent 74%
+    ),
+    /* warm edge: the red arc, faintest of all */
+    radial-gradient(
+      ellipse 44% 34% at 102% 72%,
+      rgba(228, 24, 36, 0.045) 0%,
+      transparent 74%
     );
 }
 
