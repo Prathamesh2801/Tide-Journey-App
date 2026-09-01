@@ -41,7 +41,6 @@
   src: url("./assets/fonts/poppins-800.woff2") format("woff2");
 }
 
-
 /* ---------------------------------------------------------------
    Tide brand theme.
 
@@ -190,7 +189,7 @@ body {
   /* Warm base. The page token #f4f7fc is a cool blue-white, which
      cancelled the yellow it was meant to carry; this neutral-warm ground
      lets the disc colours actually register. */
-  background-color: #fdfaf3;
+  background-color: #fbecc8;
 
   background-image:
     /* Warm top corner, so the page opens warm rather than cool. Kept
@@ -203,36 +202,36 @@ body {
     ),
     /* A softer warm note on the opposite top corner, behind the logo. */
     radial-gradient(
-      ellipse 56% 26% at 2% -4%,
-      rgba(252, 176, 12, 0.12) 0%,
-      transparent 74%
-    ),
+        ellipse 56% 26% at 2% -4%,
+        rgba(252, 176, 12, 0.12) 0%,
+        transparent 74%
+      ),
     /* Yellow: the dominant field, strongest low and sweeping upward. */
     radial-gradient(
-      ellipse 104% 66% at 74% 106%,
-      rgba(252, 216, 0, 0.34) 0%,
-      transparent 76%
-    ),
+        ellipse 104% 66% at 74% 106%,
+        rgba(252, 216, 0, 0.34) 0%,
+        transparent 76%
+      ),
     /* Orange inside the yellow, like the logo's inner ring. */
     radial-gradient(
-      ellipse 74% 48% at 98% 86%,
-      rgba(252, 152, 8, 0.26) 0%,
-      transparent 74%
-    ),
+        ellipse 74% 48% at 98% 86%,
+        rgba(252, 152, 8, 0.26) 0%,
+        transparent 74%
+      ),
     /* Orange on the opposite low corner so the band spans the width
        rather than pooling on one side. */
-    radial-gradient(
-      ellipse 62% 42% at 4% 100%,
-      rgba(252, 176, 12, 0.2) 0%,
-      transparent 74%
-    ),
-    /* Red arc, the outermost warm note - kept low so it tints rather
+    /* radial-gradient(
+        ellipse 62% 42% at 4% 100%,
+        rgba(252, 176, 12, 0.2) 0%,
+        transparent 74%
+      ); */
+  /* Red arc, the outermost warm note - kept low so it tints rather
        than turning the corner pink. */
-    radial-gradient(
+  /* radial-gradient(
       ellipse 46% 34% at 104% 56%,
-      rgba(228, 24, 36, 0.08) 0%,
+      rgba(228, 24, 36, 0.0) 0%,
       transparent 74%
-    );
+    ); */
 }
 
 /* Keyboard focus stays visible; touch taps leave no lingering ring. */
