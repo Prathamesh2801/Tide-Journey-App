@@ -84,7 +84,10 @@
   --color-border: #d4e0f0;
 
   --color-text: #14243d;
-  --color-muted: #5b6f8c;
+  /* Darkened from #5b6f8c, which measured 4.23:1 against the launcher's
+     tinted background - just under the 4.5:1 AA floor. This clears it at
+     4.8:1 with no visible change in weight. */
+  --color-muted: #526686;
 
   /* Brand gradient, reusable as one token */
   --gradient-brand: linear-gradient(135deg, #2f74c4 0%, #184890 100%);
@@ -184,41 +187,46 @@ body {
    should register as a tint on white, not as a coloured background.
    Above ~0.10 the warm tones start fighting the artwork on the cards. */
 .bg-brand-ambient {
+  /* Warm base. The page token #f4f7fc is a cool blue-white, which
+     cancelled the yellow it was meant to carry; this neutral-warm ground
+     lets the disc colours actually register. */
+  background-color: #fdfaf3;
+
   background-image:
-    /* warm halo behind the logo, echoing the disc it sits on */
+    /* Blue stays only at the very top, under the wordmark and title, so
+       the type reads against a cool ground it belongs to.
+       Uses a light sky blue rather than the deep #183c90: a dark navy at
+       low alpha over the warm base desaturates to grey (measured sat=0)
+       instead of reading blue. A light tint keeps its hue. */
     radial-gradient(
-      ellipse 34% 26% at 4% 2%,
-      rgba(252, 180, 12, 0.07) 0%,
-      transparent 70%
-    ),
-    /* cool: top-left, anchoring the wordmark */
-    radial-gradient(
-      ellipse 70% 52% at 14% 2%,
-      rgba(24, 60, 144, 0.09) 0%,
-      transparent 72%
-    ),
-    /* cool counterweight on the opposite side, keeps blue dominant */
-    radial-gradient(
-      ellipse 55% 40% at 100% 24%,
-      rgba(24, 60, 144, 0.05) 0%,
-      transparent 72%
-    ),
-    /* warm core: yellow, low and wide so it is a wash not a blob */
-    radial-gradient(
-      ellipse 78% 52% at 88% 104%,
-      rgba(252, 216, 0, 0.09) 0%,
+      ellipse 92% 32% at 32% -6%,
+      rgba(120, 180, 240, 0.34) 0%,
       transparent 76%
     ),
-    /* warm mid: orange, offset to read as a band */
+    /* Yellow: the dominant warm field, sweeping up from the bottom. */
     radial-gradient(
-      ellipse 62% 44% at 52% 100%,
-      rgba(252, 180, 12, 0.06) 0%,
+      ellipse 96% 62% at 78% 106%,
+      rgba(252, 216, 0, 0.3) 0%,
       transparent 74%
     ),
-    /* warm edge: the red arc, faintest of all */
+    /* Orange: sits inside the yellow like the logo's inner ring. */
     radial-gradient(
-      ellipse 44% 34% at 102% 72%,
-      rgba(228, 24, 36, 0.045) 0%,
+      ellipse 70% 46% at 96% 88%,
+      rgba(252, 152, 8, 0.24) 0%,
+      transparent 72%
+    ),
+    /* Orange on the opposite low corner so the band spans the width
+       rather than pooling on one side. */
+    radial-gradient(
+      ellipse 58% 40% at 6% 98%,
+      rgba(252, 176, 12, 0.16) 0%,
+      transparent 74%
+    ),
+    /* Red arc, the outermost warm note - kept low so it tints rather
+       than turning the corner pink. */
+    radial-gradient(
+      ellipse 46% 34% at 104% 58%,
+      rgba(228, 24, 36, 0.08) 0%,
       transparent 74%
     );
 }
