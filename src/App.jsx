@@ -1,5 +1,6 @@
 import { HashRouter } from 'react-router-dom'
 import AppRoutes from './routes/AppRoutes'
+import CacheStatus from './components/common/CacheStatus'
 
 /**
  * HashRouter is used deliberately: the app is served from a local XAMPP
@@ -10,6 +11,7 @@ export default function App() {
   return (
     <HashRouter>
       <AppRoutes />
+      <CacheStatus />
     </HashRouter>
   )
 }

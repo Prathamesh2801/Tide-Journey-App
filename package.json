@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && node scripts/package-dist.mjs",
+    "build": "vite build && node scripts/build-sw-manifest.mjs && node scripts/package-dist.mjs",
     "build:only": "vite build",
     "lint": "eslint .",
     "preview": "vite preview --host"

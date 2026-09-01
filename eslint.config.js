@@ -7,7 +7,16 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist', 'docs/project/extracted']),
   {
+    // The service worker runs in a worker global, not the browser one.
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: { ...globals.serviceworker, importScripts: 'readonly' },
+    },
+    rules: { 'no-undef': 'error' },
+  },
+  {
     files: ['**/*.{js,jsx}'],
+    ignores: ['public/sw.js'],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,

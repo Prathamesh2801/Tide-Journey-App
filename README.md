@@ -35,14 +35,24 @@ feed data, so adding or removing an asset there is all that is needed.
 
 Use `npm run build:only` to build without pruning or zipping.
 
-### Media caching (optional)
+### Media caching
 
-The tablets can cache all media locally so video never crosses the
-network during an event, but Cache Storage and service workers require a
-**secure context** — confirmed on a Lenovo K10 that
-`http://<lan-ip>/tide-journey` is not one. See
-[deploy/XAMPP-HTTPS-SETUP.md](deploy/XAMPP-HTTPS-SETUP.md) for enabling
-local HTTPS, then `public/check.html` on a tablet to verify.
+On first load each tablet copies the whole ~67 MB media package into
+Cache Storage; after that video, audio and brochure pages are served from
+the device and never touch the network. A small progress pill shows
+during the copy — the app stays usable throughout, since anything not yet
+cached falls through to the server.
+
+This needs a **secure context**: confirmed on a Lenovo K10 that
+`http://<lan-ip>/tide-journey` is not one, while HTTPS from the same IP
+is. See [deploy/XAMPP-HTTPS-SETUP.md](deploy/XAMPP-HTTPS-SETUP.md), then
+open `check.html` on a tablet to verify. Without HTTPS the app still
+works, it just streams as before.
+
+The precache list (`dist/sw-manifest.js`) is generated at build time from
+the same keep-list the pruner uses, so it cannot drift from what ships.
+Its version hash changes only when the media set changes, so an unchanged
+redeploy leaves the tablets' cache intact.
 
 ## Media package
 
