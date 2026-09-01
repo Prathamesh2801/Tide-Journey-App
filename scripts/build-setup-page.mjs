@@ -14,20 +14,30 @@ import { qrSvg } from './qr.mjs'
 const dist = join(process.cwd(), 'dist')
 const certPath = join(dist, 'tide.crt')
 
-function certIp() {
-  if (!existsSync(certPath)) return null
+/**
+ * Every address the certificate is valid for. The first is used for the QR
+ * code; the rest let the page tell "served from another address the cert
+ * also covers" apart from a genuine mismatch.
+ */
+function certIps() {
+  if (!existsSync(certPath)) return []
   try {
     const text = execFileSync('openssl', ['x509', '-in', certPath, '-noout', '-ext', 'subjectAltName'], {
       encoding: 'utf8',
     })
-    const m = /IP Address:([0-9.]+)/.exec(text)
-    return m ? m[1] : null
+    return [...text.matchAll(/IP Address:([0-9.]+)/g)].map((m) => m[1])
   } catch {
-    return null // openssl not on PATH — fall back to the documented default
+    return [] // openssl not on PATH — fall back to the documented default
   }
 }
 
-const ip = certIp() ?? '192.168.1.6'
+const ips = certIps()
+const ip = ips[0] ?? '192.168.1.6'
+// Loopback is in the cert for local testing but is never the address a
+// technician browses to, so it does not belong in the on-page hints.
+const validOrigins = (ips.length ? ips : [ip])
+  .filter((a) => a !== '127.0.0.1')
+  .map((a) => `https://${a}`)
 const base = `https://${ip}/tide-journey`
 const certUrl = `${base}/tide.crt`
 const appUrl = `${base}/`
@@ -134,17 +144,37 @@ const html = `<!doctype html>
 // for, the QR above points at the wrong host. Say so plainly instead of
 // letting a technician scan something that cannot work.
 (function () {
-  var expected = ${JSON.stringify(`https://${ip}`)};
+  var valid = ${JSON.stringify(validOrigins)};
+  var qrOrigin = ${JSON.stringify(`https://${ip}`)};
   var actual = location.protocol + '//' + location.host;
+  var el = document.getElementById('mismatch');
+
   if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return;
-  if (actual !== expected) {
-    var el = document.getElementById('mismatch');
+
+  if (valid.indexOf(actual) === -1) {
+    // Served from an address the certificate does not cover at all.
     el.className = 'note warn';
     el.innerHTML =
       '<b>Address mismatch.</b> This page is being served from <b>' + actual +
-      '</b> but the certificate was issued for <b>' + expected + '</b>. ' +
-      'The QR code below will not work. Either serve the app from ' + expected +
-      ', or generate a new certificate for this address (see XAMPP-HTTPS-SETUP.md, Step 1).';
+      '</b>, which this certificate does not cover. It is valid for: <b>' +
+      valid.join('</b>, <b>') + '</b>.<br><br>' +
+      'The QR code below will not work, and tablets will show a security ' +
+      'warning. Either serve the app from one of the addresses above, or ' +
+      'generate a new certificate for this one (see the setup guide, Appendix 1).';
+    return;
+  }
+
+  if (actual !== qrOrigin) {
+    // Covered by the certificate, but not the address baked into the QR.
+    // The download button is relative so it still works - say so, and
+    // rewrite the printed URL to match where we actually are.
+    el.className = 'note';
+    el.innerHTML =
+      'You are on <b>' + actual + '</b>. The QR code points at <b>' + qrOrigin +
+      '</b> instead, so ignore it here and use the <b>download button</b> ' +
+      'below - the certificate is valid for both addresses.';
+    var shown = document.querySelector('.url');
+    if (shown) shown.textContent = actual + '/tide-journey/tide.crt';
   }
 })();
 </script>

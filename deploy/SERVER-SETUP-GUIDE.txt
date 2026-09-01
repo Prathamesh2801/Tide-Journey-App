@@ -8,6 +8,13 @@ WHAT YOU WERE GIVEN
   tide.crt            certificate  (public - safe to hand around)
   tide.key            private key  (keep on the laptop only)
 
+THE ADDRESS THIS IS BUILT FOR
+  The laptop must be reachable at   192.168.0.80
+
+  The certificate also covers 192.168.1.6 as a spare, for the other
+  laptop or a router on the 192.168.1.x range. Everything below assumes
+  192.168.0.80 - if you use the spare instead, substitute it everywhere.
+
 WHAT YOU ARE BUILDING
   One laptop runs XAMPP and serves the app over Wi-Fi. Around 70 tablets
   connect to it. Each tablet copies all the video and audio to its own
@@ -27,14 +34,18 @@ HOW LONG IT TAKES
 ================================================================================
 
 --------------------------------------------------------------------------------
-A1. Set the laptop IP address to 192.168.1.6
+A1. Set the laptop IP address to 192.168.0.80
 --------------------------------------------------------------------------------
 
   *** READ THIS FIRST - IT DECIDES WHETHER THE WHOLE THING WORKS ***
 
-  The certificate is locked to the single address 192.168.1.6. Not a range,
-  not "192.168.1.anything" - that one exact address. Chrome checks the
-  address bar against it and rejects anything else.
+  The certificate only works for these exact addresses:
+
+      192.168.0.80      <-- the one you should be using
+      192.168.1.6       (spare, for the other laptop)
+
+  Not a range. Not "192.168.0.anything". Those exact addresses. Chrome
+  checks the address bar against them and rejects anything else.
 
   If the laptop ends up on a different IP:
     - every tablet shows "Your connection is not private", AND
@@ -51,13 +62,13 @@ A1. Set the laptop IP address to 192.168.1.6
 
   Look for "IPv4 Address" under your Wi-Fi adapter.
 
-  If it already says 192.168.1.6 -> good, go to A2.
+  If it already says 192.168.0.80 -> good, go to A2.
 
   If it says something else, do ONE of these:
 
     Option 1 (BEST - do this one if you can) - reserve it on the router:
       Log into the Wi-Fi router admin page, find "DHCP Reservation" or
-      "Static Lease", and bind the laptop Wi-Fi MAC address to 192.168.1.6.
+      "Static Lease", and bind the laptop Wi-Fi MAC address to 192.168.0.80.
 
       This is worth the effort: it survives reboots and moving to a
       different venue, so the certificate keeps working permanently and
@@ -66,19 +77,30 @@ A1. Set the laptop IP address to 192.168.1.6
     Option 2 - set it on the laptop:
       Settings -> Network & Internet -> Wi-Fi -> Hardware properties
       -> IP assignment -> Edit -> Manual -> IPv4 on
-         IP address      192.168.1.6
+         IP address      192.168.0.80
          Subnet mask     255.255.255.0
-         Gateway         (your router IP, usually 192.168.1.1)
+         Gateway         (your router IP - for 192.168.0.80 this is
+                          normally 192.168.0.1. Use whatever "Default
+                          Gateway" the ipconfig output showed.)
 
-  Re-run ipconfig and confirm it now reads 192.168.1.6.
+  Re-run ipconfig and confirm it now reads 192.168.0.80.
 
-  NOTE: some routers hand out 192.168.0.x instead of 192.168.1.x. If yours
-  does, you cannot simply set the laptop to 192.168.1.6 - it will not be
-  reachable. Either change the router LAN subnet to 192.168.1.x, or go to
-  APPENDIX 1 and make a new certificate.
+  NOTE ON SUBNETS: 192.168.0.80 only works on a router that uses the
+  192.168.0.x range. Check your gateway in the ipconfig output:
 
-  >> If you truly cannot use 192.168.1.6, stop and read APPENDIX 1 at the
-     bottom. A new certificate has to be made. Do not skip this.
+      gateway 192.168.0.1  -> good, use 192.168.0.80
+      gateway 192.168.1.1  -> use the spare address 192.168.1.6 instead
+                              (the certificate covers it too - just use
+                              192.168.1.6 everywhere this guide says
+                              192.168.0.80)
+
+  A laptop cannot use 192.168.0.80 on a 192.168.1.x router; it simply will
+  not be reachable. Since the certificate covers one address in each of
+  those two common ranges, you should not need a new certificate.
+
+  >> Only if BOTH addresses are unusable (an unusual router range such as
+     10.0.0.x), stop and read APPENDIX 1 at the bottom. A new certificate
+     has to be made. Do not skip this.
 
 
 --------------------------------------------------------------------------------
@@ -139,7 +161,7 @@ A5. Point Apache at the certificate
   already exist somewhere in the file - EDIT them, do not paste in copies:
 
       DocumentRoot "C:/xampp/htdocs"
-      ServerName 192.168.1.6:443
+      ServerName 192.168.0.80:443
       SSLCertificateFile "conf/ssl.crt/tide.crt"
       SSLCertificateKeyFile "conf/ssl.key/tide.key"
 
@@ -211,13 +233,13 @@ A9. Test on the laptop itself - DO NOT SKIP
 
   In the laptop browser open:
 
-      https://192.168.1.6/tide-journey/check.html
+      https://192.168.0.80/tide-journey/check.html
 
   Note it is https, not http.
 
   You WILL see a certificate warning on the laptop. That is normal and
   expected - the laptop has not been told to trust the certificate, only
-  the tablets will be. Click "Advanced" then "Proceed to 192.168.1.6".
+  the tablets will be. Click "Advanced" then "Proceed to 192.168.0.80".
 
   The page must then show:
 
@@ -246,7 +268,7 @@ B1. Open the setup page
 
   On the tablet, open Chrome and go to:
 
-      https://192.168.1.6/tide-journey/setup.html
+      https://192.168.0.80/tide-journey/setup.html
 
   Tap Advanced -> Proceed past the warning (this is the last time you will
   see it on this tablet).
@@ -300,7 +322,7 @@ B4. Confirm the tablet is right
 
   Go back to the setup page and tap "Run the device check", or open:
 
-      https://192.168.1.6/tide-journey/check.html
+      https://192.168.0.80/tide-journey/check.html
 
   You should now get NO warning at all, and four green YES rows.
 
@@ -314,7 +336,7 @@ B5. Let the tablet copy the media - THIS IS THE IMPORTANT ONE
 
   Open the app:
 
-      https://192.168.1.6/tide-journey/
+      https://192.168.0.80/tide-journey/
 
   A small pill appears at the edge of the screen reading
 
@@ -355,9 +377,9 @@ B6. Tips for doing 70 of them
 ================================================================================
 
   1. Start the laptop, open XAMPP Control Panel, Start Apache.
-  2. Make sure the laptop is on the Wi-Fi and still has 192.168.1.6
+  2. Make sure the laptop is on the Wi-Fi and still has 192.168.0.80
      (run ipconfig to confirm).
-  3. Tablets open https://192.168.1.6/tide-journey/ and just work.
+  3. Tablets open https://192.168.0.80/tide-journey/ and just work.
 
   The tablets play from their own storage, so even if the Wi-Fi gets busy or
   the laptop is briefly disturbed, video keeps playing normally.
@@ -372,7 +394,7 @@ B6. Tips for doing 70 of them
   "Your connection is not private" on a tablet, after doing B3
       The certificate went in as a user certificate instead of a CA
       certificate. Redo B3.
-      Also possible: the laptop IP is no longer 192.168.1.6. Run ipconfig.
+      Also possible: the laptop IP is no longer 192.168.0.80. Run ipconfig.
 
   Tablet cannot reach the site at all
       - Tablet on a different Wi-Fi network, or on mobile data. Check.
@@ -396,7 +418,7 @@ B6. Tips for doing 70 of them
       Only appears on https with the certificate installed. Redo B3/B4.
 
   Everything worked yesterday, now every tablet warns
-      The laptop IP changed. Set it back to 192.168.1.6 (A1) or make the
+      The laptop IP changed. Set it back to 192.168.0.80 (A1) or make the
       router reservation permanent.
 
   openssl says: Can't open "C:\Apache24\conf/openssl.cnf"
@@ -409,11 +431,15 @@ B6. Tips for doing 70 of them
 
 
 ================================================================================
-  APPENDIX 1 - IF YOU CANNOT USE 192.168.1.6
+  APPENDIX 1 - IF YOU CANNOT USE 192.168.0.80
 ================================================================================
 
-  The supplied certificate is issued for 192.168.1.6 only. For any other
-  address you must generate a new one.
+  The supplied certificate covers 192.168.0.80 and 192.168.1.6. If neither
+  fits your network (for example a router using 10.0.0.x), you must
+  generate a new one.
+
+  Try the spare address first - if your router uses the 192.168.1.x range,
+  just use 192.168.1.6 and skip this appendix entirely.
 
   1. Open Command Prompt (not PowerShell) and run these lines. Replace
      BOTH copies of 192.168.1.50 with your actual IP.
@@ -470,7 +496,7 @@ B6. Tips for doing 70 of them
      instead of the QR.
 
   Then continue from A6, and use your new IP everywhere this guide says
-  192.168.1.6.
+  192.168.0.80.
 
 
 ================================================================================
