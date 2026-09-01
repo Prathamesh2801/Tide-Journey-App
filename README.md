@@ -35,6 +35,15 @@ feed data, so adding or removing an asset there is all that is needed.
 
 Use `npm run build:only` to build without pruning or zipping.
 
+### Media caching (optional)
+
+The tablets can cache all media locally so video never crosses the
+network during an event, but Cache Storage and service workers require a
+**secure context** — confirmed on a Lenovo K10 that
+`http://<lan-ip>/tide-journey` is not one. See
+[deploy/XAMPP-HTTPS-SETUP.md](deploy/XAMPP-HTTPS-SETUP.md) for enabling
+local HTTPS, then `public/check.html` on a tablet to verify.
+
 ## Media package
 
 Video, audio and image assets live in `public/media/` and are **not in
