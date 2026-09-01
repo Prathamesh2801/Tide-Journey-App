@@ -34,8 +34,18 @@ public/media/
 │   ├── videos/       11 x .mp4   (~60 MB)
 │   ├── thumbnails/   11 x .jpg
 │   └── images/        5 x .webp
-└── audio/             2 x .mp3
+├── audio/             2 x .mp3
+└── brochures/         one folder per PDF, page-NN.webp + thumb.webp
 ```
+
+Brochure pages are generated from the PDFs in `docs/raw/pdf/`:
+
+```bash
+pip install pymupdf
+python scripts/build-brochures.py
+```
+
+The script prints an updated array to paste into `src/config/brochures.js`.
 
 Raw masters are kept outside the repo in `docs/raw/`.
 
@@ -67,7 +77,7 @@ developed without touching the rest of the app.
 | 02 | Disruptive Social Maximization | 2 audio tracks | Built |
 | 03 | Retail | Video | Placeholder |
 | 04 | Television & iVideo | 3 audio tracks | Placeholder - reuses the audio module |
-| 05 | E-commerce | Interactive | Placeholder |
+| 05 | Brochure | Multi-page PDFs | Built |
 
 ## Deployment
 
@@ -85,3 +95,6 @@ tablet's MediaTek MT8768T:
   cause of stutter on this class of decoder.
 - **Audio** - MP3 128 kbps stereo, loudness-normalised to -16 LUFS so
   tracks play at a matched volume.
+- **Brochures** - each PDF page pre-rendered to WebP at 1600px on the long
+  edge, so the tablet shows plain images with no PDF library in the bundle
+  and no per-page decoding on device.

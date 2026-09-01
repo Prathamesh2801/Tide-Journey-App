@@ -12,6 +12,7 @@ import ecommerceArt from "../assets/images/exp-ecommerce.svg";
  *   "feed"  - the Social reels feed (its own experience module)
  *   "video" - a single video surface
  *   "audio" - one or more audio tracks
+ *   "brochure" - multi-page PDF documents (its own experience module)
  *   "ui"    - interactive UI, no single media file
  *
  * `mediaIds` lists entries in config/media.js. Empty means the final
@@ -65,7 +66,7 @@ export const EXPERIENCES = [
     // subtitle: "Interactive showcase",
     route: "/app-05",
     art: ecommerceArt,
-    medium: "ui",
+    medium: "brochure",
     mediaIds: [],
   },
 ];

@@ -14,20 +14,20 @@
  * show floor, nothing more.
  */
 export const EXPERIENCE_PASSCODES = {
-  'app-01': '01',
-  'app-02': '02',
-  'app-03': '03',
-  'app-04': '04',
-  'app-05': '05',
-}
+  "app-01": "01",
+  "app-02": "02",
+  "app-03": "03",
+  "app-04": "04",
+  "app-05": "05",
+};
 
 /** How long an unlocked experience stays unlocked, in milliseconds. */
-export const UNLOCK_TIMEOUT_MS = 15 * 60 * 1000
+export const UNLOCK_TIMEOUT_MS = 15 * 60 * 1000;
 
 export function getPasscode(experienceId) {
-  return EXPERIENCE_PASSCODES[experienceId] ?? null
+  return EXPERIENCE_PASSCODES[experienceId] ?? null;
 }
 
 export function isNumericPasscode(code) {
-  return typeof code === 'string' && /^\d+$/.test(code)
+  return typeof code === "string" && /^\d+$/.test(code);
 }

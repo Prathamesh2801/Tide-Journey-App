@@ -6,6 +6,11 @@
  * `ambient` paints the static brand wash. It is a plain background
  * image, never animated, so it costs nothing after the first composite.
  *
+ * `fill` switches the main area from centred-and-scrolling to a plain
+ * flex column that fills the screen. Screens whose content sizes itself
+ * to the viewport - the brochure reader, for one - need a definite
+ * height to flex against, which the centring wrapper does not provide.
+ *
  * Note the centring uses `my-auto` on the inner wrapper rather than
  * `justify-center` on the scroll container: a centred flex container
  * that overflows pushes its first child *above* the scrollable area,
@@ -17,6 +22,7 @@ export default function ScreenLayout({
   header,
   footer,
   ambient = false,
+  fill = false,
   children,
 }) {
   return (
@@ -31,10 +37,18 @@ export default function ScreenLayout({
         </header>
       ) : null}
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 sm:px-10">
-        <div className="my-auto flex min-h-full flex-col justify-center">
-          {children}
-        </div>
+      <main
+        className={`min-h-0 flex-1 px-6 pb-6 sm:px-10 ${
+          fill ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+        }`}
+      >
+        {fill ? (
+          children
+        ) : (
+          <div className="my-auto flex min-h-full flex-col justify-center">
+            {children}
+          </div>
+        )}
       </main>
 
       {footer ? (
