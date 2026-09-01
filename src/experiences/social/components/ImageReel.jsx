@@ -27,6 +27,22 @@ function ImageReel({ post, liked, likeCount, onToggleLike }) {
       onClick={handleTap}
     >
       {!imgLoaded && <div className="skeleton absolute inset-0" aria-hidden="true" />}
+
+      {/* Blurred fill behind the photo, matching VideoReel: the posts are
+          square and the tablet viewport is not, so containing them leaves
+          bars that would otherwise read as dead space. */}
+      <img
+        src={post.image}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className={`pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl transition-opacity duration-300 ${
+          imgLoaded ? "opacity-60" : "opacity-0"
+        }`}
+      />
+
       <img
         src={post.image}
         alt=""
@@ -34,7 +50,7 @@ function ImageReel({ post, liked, likeCount, onToggleLike }) {
         decoding="async"
         draggable={false}
         onLoad={() => setImgLoaded(true)}
-        className={`h-full w-full object-contain transition-opacity duration-300 ${
+        className={`relative h-full w-full object-contain transition-opacity duration-300 ${
           imgLoaded ? "opacity-100" : "opacity-0"
         }`}
       />

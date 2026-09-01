@@ -174,6 +174,22 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
       onClick={handleTap}
     >
       {!posterLoaded && <div className="skeleton absolute inset-0" aria-hidden="true" />}
+
+      {/* Blurred fill behind the media. The clips are 9:16 but the tablet
+          viewport is nearer 3:4, so containing them leaves bars - this is
+          how Reels/Shorts fill that space instead of cropping the frame. */}
+      <img
+        src={post.thumb}
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        decoding="async"
+        draggable={false}
+        className={`pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl transition-opacity duration-300 ${
+          posterLoaded ? "opacity-60" : "opacity-0"
+        }`}
+      />
+
       <img
         src={post.thumb}
         alt=""
@@ -181,7 +197,7 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
         decoding="async"
         draggable={false}
         onLoad={() => setPosterLoaded(true)}
-        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+        className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
           posterLoaded ? "opacity-100" : "opacity-0"
         } ${started ? "pointer-events-none" : ""}`}
       />
@@ -194,7 +210,7 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
           preload="metadata"
           playsInline
           loop
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
         />
       )}
 
