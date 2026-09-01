@@ -16,10 +16,24 @@ assets are local, so nothing is fetched from a CDN at runtime.
 ```bash
 npm install
 npm run dev      # dev server
-npm run build    # production build to dist/
+npm run build    # build, prune unused media, zip to release/
 npm run lint     # ESLint
 npm run preview  # serve the production build
 ```
+
+## Deploying
+
+`npm run build` produces `release/tide-journey.zip`. Extract it into
+XAMPP's `htdocs/` and it becomes `htdocs/tide-journey/` - no further
+setup: `base: './'` and `HashRouter` mean the app works from any
+subfolder without server rewrite rules.
+
+The build also prunes any media in `dist/` that no config references, so
+working files (old encodes, retired brochures) never ship. The keep-list
+is derived from `config/media.js`, `config/brochures.js` and the Social
+feed data, so adding or removing an asset there is all that is needed.
+
+Use `npm run build:only` to build without pruning or zipping.
 
 ## Media package
 
