@@ -1,0 +1,431 @@
+================================================================================
+  TIDE JOURNEY - SERVER SETUP GUIDE
+  For the person setting up the laptop and the tablets
+================================================================================
+
+WHAT YOU WERE GIVEN
+  tide-journey.zip    the app
+  tide.crt            certificate  (public - safe to hand around)
+  tide.key            private key  (keep on the laptop only)
+
+WHAT YOU ARE BUILDING
+  One laptop runs XAMPP and serves the app over Wi-Fi. Around 70 tablets
+  connect to it. Each tablet copies all the video and audio to its own
+  storage the first time, so nothing streams during the event.
+
+  Everything is on the local Wi-Fi. No internet is used at any point.
+
+HOW LONG IT TAKES
+  Laptop  : about 20 minutes, once
+  Tablets : about 2 minutes each (1 min setup + 1 min media download)
+
+  Tablets can be done in batches, several at the same time.
+
+
+================================================================================
+  PART A - THE LAPTOP
+================================================================================
+
+--------------------------------------------------------------------------------
+A1. Set the laptop IP address to 192.168.1.6
+--------------------------------------------------------------------------------
+
+  IMPORTANT: The certificate only works for 192.168.1.6. If the laptop has a
+  different IP, every tablet will show a security warning.
+
+  Check the current IP - open Command Prompt and type:
+
+      ipconfig
+
+  Look for "IPv4 Address" under your Wi-Fi adapter.
+
+  If it already says 192.168.1.6 -> good, go to A2.
+
+  If it says something else, do ONE of these:
+
+    Option 1 (better) - reserve it on the router:
+      Log into the Wi-Fi router admin page, find "DHCP Reservation" or
+      "Static Lease", and bind the laptop Wi-Fi MAC address to 192.168.1.6.
+
+    Option 2 - set it on the laptop:
+      Settings -> Network & Internet -> Wi-Fi -> Hardware properties
+      -> IP assignment -> Edit -> Manual -> IPv4 on
+         IP address      192.168.1.6
+         Subnet mask     255.255.255.0
+         Gateway         (your router IP, usually 192.168.1.1)
+
+  Re-run ipconfig and confirm it now reads 192.168.1.6.
+
+  >> If you truly cannot use 192.168.1.6, stop and read APPENDIX 1 at the
+     bottom. A new certificate has to be made. Do not skip this.
+
+
+--------------------------------------------------------------------------------
+A2. Install XAMPP
+--------------------------------------------------------------------------------
+
+  Download from https://www.apachefriends.org and install to C:\xampp
+  (the default). You only need Apache - MySQL, FileZilla etc. can be
+  unticked.
+
+
+--------------------------------------------------------------------------------
+A3. Put the app in place
+--------------------------------------------------------------------------------
+
+  1. Open  C:\xampp\htdocs
+  2. Extract tide-journey.zip directly into that folder.
+
+  You should end up with exactly this:
+
+      C:\xampp\htdocs\tide-journey\index.html
+      C:\xampp\htdocs\tide-journey\setup.html
+      C:\xampp\htdocs\tide-journey\check.html
+      C:\xampp\htdocs\tide-journey\sw.js
+      C:\xampp\htdocs\tide-journey\tide.crt
+      C:\xampp\htdocs\tide-journey\media\...
+      C:\xampp\htdocs\tide-journey\assets\...
+
+  CHECK: if you see  htdocs\tide-journey\tide-journey\...  you extracted one
+  level too deep. Move the inner folder up and delete the empty outer one.
+
+
+--------------------------------------------------------------------------------
+A4. Copy the certificate files into XAMPP
+--------------------------------------------------------------------------------
+
+  Copy the two files you were given:
+
+      tide.crt   ->   C:\xampp\apache\conf\ssl.crt\tide.crt
+      tide.key   ->   C:\xampp\apache\conf\ssl.key\tide.key
+
+  Note they go into two DIFFERENT folders. ssl.crt and ssl.key.
+
+
+--------------------------------------------------------------------------------
+A5. Point Apache at the certificate
+--------------------------------------------------------------------------------
+
+  Open this file in Notepad:
+
+      C:\xampp\apache\conf\extra\httpd-ssl.conf
+
+  Find the section that begins with:
+
+      <VirtualHost _default_:443>
+
+  Inside that section, these four lines must read exactly as below. They
+  already exist somewhere in the file - EDIT them, do not paste in copies:
+
+      DocumentRoot "C:/xampp/htdocs"
+      ServerName 192.168.1.6:443
+      SSLCertificateFile "conf/ssl.crt/tide.crt"
+      SSLCertificateKeyFile "conf/ssl.key/tide.key"
+
+  *** THE MOST COMMON MISTAKE ***
+  This file usually already contains SSLCertificateFile and
+  SSLCertificateKeyFile lines pointing at server.crt / server.key.
+  Apache obeys the LAST one it reads, so if the old lines are still
+  there below yours, it will quietly serve the WRONG certificate and
+  every tablet will show a warning no matter what else you do.
+
+  Use Notepad Ctrl+F to search the whole file for:
+
+      SSLCertificateFile
+
+  There must be exactly ONE line that is not commented out. Put a # at
+  the start of any others, like this:
+
+      #SSLCertificateFile "conf/ssl.crt/server.crt"
+
+  Do the same search for  SSLCertificateKeyFile.
+
+  Save the file.
+
+
+--------------------------------------------------------------------------------
+A6. Make sure SSL is switched on
+--------------------------------------------------------------------------------
+
+  Open  C:\xampp\apache\conf\httpd.conf  and search for these two lines.
+  Neither may start with a #:
+
+      LoadModule ssl_module modules/mod_ssl.so
+      Include conf/extra/httpd-ssl.conf
+
+  In XAMPP they are normally already enabled. Remove the # if present, save.
+
+
+--------------------------------------------------------------------------------
+A7. Start Apache
+--------------------------------------------------------------------------------
+
+  Open the XAMPP Control Panel. Next to Apache click Stop (if running),
+  then Start.
+
+  Apache should show a green highlight and list ports 80, 443.
+
+  If it will NOT start:
+      Click "Logs" -> "Apache (error.log)" and read the last few lines.
+      A wrong file path in step A5 is by far the usual cause.
+      If it says the port is in use, click "Netstat" to see what is
+      holding port 443 (often Skype, IIS or VMware) and close it.
+
+
+--------------------------------------------------------------------------------
+A8. Allow other devices through the firewall
+--------------------------------------------------------------------------------
+
+  The first time Apache starts, Windows may pop up a firewall prompt.
+  Tick "Private networks" and click Allow.
+
+  If you missed it, or tablets cannot connect later:
+      Control Panel -> Windows Defender Firewall -> Allow an app
+      -> find Apache HTTP Server -> tick the Private column.
+
+
+--------------------------------------------------------------------------------
+A9. Test on the laptop itself - DO NOT SKIP
+--------------------------------------------------------------------------------
+
+  In the laptop browser open:
+
+      https://192.168.1.6/tide-journey/check.html
+
+  Note it is https, not http.
+
+  You WILL see a certificate warning on the laptop. That is normal and
+  expected - the laptop has not been told to trust the certificate, only
+  the tablets will be. Click "Advanced" then "Proceed to 192.168.1.6".
+
+  The page must then show:
+
+      Secure context          YES
+      Service worker API      YES
+      Cache Storage API       YES
+      Service worker reg.     SUCCEEDED
+
+  If any row says NO, HTTPS is not really working. Go back to A5 - almost
+  always it is the duplicate SSLCertificateFile line.
+
+  >> Do not start on the tablets until this page is green. <<
+
+  The laptop is now finished. Leave XAMPP running.
+
+
+================================================================================
+  PART B - EACH TABLET
+================================================================================
+
+  Do this once per tablet. The tablet must be on the same Wi-Fi as the laptop.
+
+--------------------------------------------------------------------------------
+B1. Open the setup page
+--------------------------------------------------------------------------------
+
+  On the tablet, open Chrome and go to:
+
+      https://192.168.1.6/tide-journey/setup.html
+
+  Tap Advanced -> Proceed past the warning (this is the last time you will
+  see it on this tablet).
+
+  This page walks you through the rest and has a big Download button.
+
+
+--------------------------------------------------------------------------------
+B2. Download the certificate
+--------------------------------------------------------------------------------
+
+  On that setup page, tap:
+
+      "Or tap here to download"
+
+  The file tide.crt goes into the tablet Downloads folder.
+
+  (There is also a QR code on that page. That is for scanning from a printed
+  sheet or from the laptop screen with the tablet camera - if you are already
+  on the setup page, just use the button, it is quicker.)
+
+
+--------------------------------------------------------------------------------
+B3. Install it as a CA certificate
+--------------------------------------------------------------------------------
+
+  On the tablet:
+
+      Settings -> Security -> Encryption & credentials
+              -> Install a certificate -> CA certificate
+
+  1. Android shows a red "your network may be monitored" warning.
+     Tap "Install anyway". This warning appears for every private
+     certificate and is expected here.
+
+  2. Pick tide.crt from Downloads.
+
+  3. If asked for a name, type:  Tide Journey
+
+  If Android demands a screen lock first, set a simple PIN. Android will not
+  install any certificate without one. Note the PIN down.
+
+  *** It must be installed under "CA certificate", NOT "VPN and app user
+      certificate". If you pick the wrong one the warning will keep coming
+      back. ***
+
+
+--------------------------------------------------------------------------------
+B4. Confirm the tablet is right
+--------------------------------------------------------------------------------
+
+  Go back to the setup page and tap "Run the device check", or open:
+
+      https://192.168.1.6/tide-journey/check.html
+
+  You should now get NO warning at all, and four green YES rows.
+
+  If a warning still appears, the certificate went in as a user certificate.
+  Repeat B3 and choose "CA certificate".
+
+
+--------------------------------------------------------------------------------
+B5. Let the tablet copy the media - THIS IS THE IMPORTANT ONE
+--------------------------------------------------------------------------------
+
+  Open the app:
+
+      https://192.168.1.6/tide-journey/
+
+  A small pill appears at the edge of the screen reading
+
+      "Preparing offline media... 12%"
+
+  LEAVE THE TABLET ON THIS SCREEN until it says:
+
+      "Ready to use offline"
+
+  That is about 67 MB per tablet. On a good Wi-Fi it takes roughly a minute,
+  but it will be slower if you are doing many tablets at once - that is fine,
+  just wait.
+
+  You can use the app while it downloads, but do not close Chrome and do not
+  let the screen sleep until it finishes.
+
+  Once it says ready, that tablet never downloads the video again. It plays
+  everything from its own storage.
+
+
+--------------------------------------------------------------------------------
+B6. Tips for doing 70 of them
+--------------------------------------------------------------------------------
+
+  - Do them in batches of about 10. All 70 at once will saturate the Wi-Fi.
+  - Keep tablets plugged in while they download.
+  - Put a sticker or a tally on each tablet as you finish it. It is very easy
+    to lose track and miss one.
+  - Turn the screen timeout up (Settings -> Display -> Screen timeout ->
+    30 minutes) so tablets do not sleep mid-download.
+  - A finished tablet can be checked instantly: turn Wi-Fi OFF, open the app,
+    play a video. If it plays with Wi-Fi off, that tablet is fully done.
+    ^ This is the single best final check. Use it on a few random tablets.
+
+
+================================================================================
+  ON EVENT DAY
+================================================================================
+
+  1. Start the laptop, open XAMPP Control Panel, Start Apache.
+  2. Make sure the laptop is on the Wi-Fi and still has 192.168.1.6
+     (run ipconfig to confirm).
+  3. Tablets open https://192.168.1.6/tide-journey/ and just work.
+
+  The tablets play from their own storage, so even if the Wi-Fi gets busy or
+  the laptop is briefly disturbed, video keeps playing normally.
+
+  App passcodes, if asked: 01, 02, 03, 04, 05 for the five experiences.
+
+
+================================================================================
+  TROUBLESHOOTING
+================================================================================
+
+  "Your connection is not private" on a tablet, after doing B3
+      The certificate went in as a user certificate instead of a CA
+      certificate. Redo B3.
+      Also possible: the laptop IP is no longer 192.168.1.6. Run ipconfig.
+
+  Tablet cannot reach the site at all
+      - Tablet on a different Wi-Fi network, or on mobile data. Check.
+      - Windows Firewall blocking Apache on private networks. See A8.
+      - Some routers have "AP isolation" or "client isolation" switched on,
+        which stops devices seeing each other. Turn it off in the router.
+
+  check.html says Secure context NO
+      You are on http:// instead of https://. Look at the address bar.
+
+  Apache will not start
+      Read Logs -> Apache (error.log). Usually a bad path from A5, or
+      something else already using port 443 (see A7).
+
+  Video is laggy or stalls
+      That tablet did not finish B5. Open the app, watch for the pill, wait
+      for "Ready to use offline". Confirm by turning Wi-Fi off and playing
+      a video.
+
+  The media download pill never appears
+      Only appears on https with the certificate installed. Redo B3/B4.
+
+  Everything worked yesterday, now every tablet warns
+      The laptop IP changed. Set it back to 192.168.1.6 (A1) or make the
+      router reservation permanent.
+
+
+================================================================================
+  APPENDIX 1 - IF YOU CANNOT USE 192.168.1.6
+================================================================================
+
+  The supplied certificate is issued for 192.168.1.6 only. For any other
+  address you must generate a new one.
+
+  1. Open Command Prompt in  C:\xampp\apache\bin  and run this, replacing
+     BOTH copies of the IP with your actual one:
+
+         openssl req -x509 -nodes -days 825 -newkey rsa:2048 ^
+           -keyout tide.key -out tide.crt ^
+           -subj "/CN=192.168.1.50" ^
+           -addext "subjectAltName=IP:192.168.1.50"
+
+     The subjectAltName part is NOT optional. Modern Chrome ignores the
+     CN field completely and only looks at subjectAltName. Without it the
+     tablets reject the certificate no matter what else you do.
+
+  2. Copy the new tide.crt and tide.key into ssl.crt and ssl.key as in A4.
+
+  3. Also copy the new tide.crt over
+     C:\xampp\htdocs\tide-journey\tide.crt
+     so the tablets download the matching one.
+
+  4. In httpd-ssl.conf change ServerName to your IP.
+
+  5. The QR code on setup.html will still point at the old address and will
+     show a red "Address mismatch" warning at the top of the page. The
+     Download button on that page still works correctly, so use that
+     instead of the QR.
+
+  Then continue from A6, and use your new IP everywhere this guide says
+  192.168.1.6.
+
+
+================================================================================
+  SECURITY NOTE
+================================================================================
+
+  tide.key is a private key. Keep it on the server laptop only - do not put
+  it on tablets or share it. tide.crt is public and is meant to be handed out.
+
+  This certificate is for an isolated offline kiosk network with no sensitive
+  data. Do not reuse it for anything reachable from the internet.
+
+  The app passcodes (01-05) are presentation gating, not security - they are
+  present in the app files and are not meant to protect anything valuable.
+
+================================================================================

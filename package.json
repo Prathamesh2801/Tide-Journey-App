@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build && node scripts/build-sw-manifest.mjs && node scripts/package-dist.mjs",
+    "build": "vite build && node scripts/build-sw-manifest.mjs && node scripts/build-setup-page.mjs && node scripts/package-dist.mjs",
     "build:only": "vite build",
     "lint": "eslint .",
     "preview": "vite preview --host"
@@ -27,7 +27,26 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.4",
     "globals": "^17.11.0",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "qrcode-generator": "^2.0.4",
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.2"
-  }
+  },
+  "description": "Offline-first React application for the Tide Journey tablet experience.\r Built to run from a local LAN/XAMPP server on ~80 Lenovo K10 tablets\r (Android 11, 4 GB RAM, 1920x1200) with no internet dependency at runtime.",
+  "main": "eslint.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Prathamesh2801/Tide-Journey-App.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Prathamesh2801/Tide-Journey-App/issues"
+  },
+  "homepage": "https://github.com/Prathamesh2801/Tide-Journey-App#readme"
 }
