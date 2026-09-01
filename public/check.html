@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tide Journey — Device Check</title>
+<style>
+  :root{color-scheme:light}
+  body{margin:0;font:16px/1.5 Roboto,system-ui,sans-serif;background:#f4f7fc;color:#14243d;padding:20px}
+  h1{font-size:22px;margin:0 0 4px;color:#184890}
+  p.sub{margin:0 0 18px;color:#5b6f8c;font-size:14px}
+  .row{background:#fff;border:1px solid #d4e0f0;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+  .label{font-size:13px;color:#5b6f8c;margin-bottom:2px}
+  .val{font-size:17px;font-weight:600;word-break:break-word}
+  .ok{color:#0a7d3c}.bad{color:#c62d05}.warn{color:#b06a00}
+  .verdict{border-radius:12px;padding:16px;margin:16px 0;font-weight:600}
+  .v-ok{background:#e6f6ec;border:1px solid #0a7d3c;color:#0a7d3c}
+  .v-bad{background:#fdeceb;border:1px solid #c62d05;color:#c62d05}
+  code{background:#eef4fc;padding:1px 5px;border-radius:4px;font-size:13px}
+</style>
+</head>
+<body>
+<h1>Tide Journey — Device Check</h1>
+<p class="sub">Run this on the Lenovo K10 at the same address you use for the app.</p>
+<div id="out"></div>
+<script>
+const out = document.getElementById('out');
+const row = (label, value, cls) =>
+  out.insertAdjacentHTML('beforeend',
+    `<div class="row"><div class="label">${label}</div><div class="val ${cls||''}">${value}</div></div>`);
+
+row('Address', location.origin + location.pathname);
+row('Secure context (needed for service worker)',
+    window.isSecureContext ? 'YES' : 'NO',
+    window.isSecureContext ? 'ok' : 'bad');
+row('Service worker API present',
+    'serviceWorker' in navigator ? 'YES' : 'NO',
+    'serviceWorker' in navigator ? 'ok' : 'bad');
+row('Cache Storage API present',
+    'caches' in window ? 'YES' : 'NO',
+    'caches' in window ? 'ok' : 'bad');
+row('Screen', `${screen.width} x ${screen.height} @ DPR ${devicePixelRatio}`);
+row('Viewport', `${innerWidth} x ${innerHeight}`);
+row('Cores / RAM', `${navigator.hardwareConcurrency || '?'} cores, ${navigator.deviceMemory || '?'} GB reported`);
+row('User agent', navigator.userAgent);
+
+// Storage budget
+if (navigator.storage && navigator.storage.estimate) {
+  navigator.storage.estimate().then(e => {
+    row('Storage quota available',
+        `${(e.quota/1073741824).toFixed(1)} GB (using ${(e.usage/1048576).toFixed(1)} MB)`,
+        e.quota > 500*1048576 ? 'ok' : 'warn');
+  });
+}
+
+// The decisive test: actually try to register a service worker.
+const verdict = (html, cls) =>
+  out.insertAdjacentHTML('afterbegin', `<div class="verdict ${cls}">${html}</div>`);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./check-sw.js', { scope: './' })
+    .then(reg => {
+      row('Service worker registration', 'SUCCEEDED', 'ok');
+      verdict('✓ CACHING WILL WORK ON THIS TABLET<br>'
+        + '<span style="font-weight:400;font-size:14px">'
+        + 'Service workers register at this address with no extra setup.</span>', 'v-ok');
+      return reg.unregister();
+    })
+    .catch(err => {
+      row('Service worker registration', 'FAILED — ' + err.message, 'bad');
+      verdict('✗ SERVICE WORKER BLOCKED HERE<br>'
+        + '<span style="font-weight:400;font-size:14px">'
+        + 'Serve over HTTPS to enable caching. See the video result below — '
+        + 'if playback is near 100% real time, streaming may be fine anyway.</span>', 'v-bad');
+    });
+} else {
+  verdict('✗ NO SERVICE WORKER SUPPORT<br>'
+    + '<span style="font-weight:400;font-size:14px">'
+    + 'This address is not a secure context, so nothing can be cached. '
+    + 'Check the video result below.</span>', 'v-bad');
+}
+
+// Video decode probe: play a real clip and count dropped frames.
+const v = document.createElement('video');
+v.src = './media/social/videos/kol-4.mp4';
+v.muted = true; v.playsInline = true;
+v.style.cssText = 'width:1px;height:1px;position:absolute;opacity:0';
+document.body.appendChild(v);
+v.play().then(() => {
+  const t0 = performance.now();
+  const q0 = v.getVideoPlaybackQuality ? v.getVideoPlaybackQuality() : null;
+  setTimeout(() => {
+    const wall = (performance.now() - t0) / 1000;
+    const played = v.currentTime;
+    const ratio = played / wall;
+    let cls = ratio > 0.95 ? 'ok' : ratio > 0.85 ? 'warn' : 'bad';
+    row('Video playback (kol-4, 6s sample)',
+        `advanced ${played.toFixed(1)}s in ${wall.toFixed(1)}s — ${(ratio*100).toFixed(0)}% real time`, cls);
+    if (q0 && v.getVideoPlaybackQuality) {
+      const q1 = v.getVideoPlaybackQuality();
+      const d = q1.droppedVideoFrames - q0.droppedVideoFrames;
+      const t = q1.totalVideoFrames - q0.totalVideoFrames;
+      row('Dropped frames', `${d} of ${t}`, d/Math.max(t,1) < 0.05 ? 'ok' : 'warn');
+    }
+    v.pause(); v.remove();
+  }, 6000);
+}).catch(e => row('Video playback', 'FAILED — ' + e.message, 'bad'));
+</script>
+</body>
+</html>
