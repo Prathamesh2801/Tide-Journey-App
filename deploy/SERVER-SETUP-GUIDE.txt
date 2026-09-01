@@ -30,8 +30,20 @@ HOW LONG IT TAKES
 A1. Set the laptop IP address to 192.168.1.6
 --------------------------------------------------------------------------------
 
-  IMPORTANT: The certificate only works for 192.168.1.6. If the laptop has a
-  different IP, every tablet will show a security warning.
+  *** READ THIS FIRST - IT DECIDES WHETHER THE WHOLE THING WORKS ***
+
+  The certificate is locked to the single address 192.168.1.6. Not a range,
+  not "192.168.1.anything" - that one exact address. Chrome checks the
+  address bar against it and rejects anything else.
+
+  If the laptop ends up on a different IP:
+    - every tablet shows "Your connection is not private", AND
+    - tapping through that warning does NOT fix it. The offline media
+      copying stops working entirely and all the tablets go back to
+      streaming video over Wi-Fi, which is exactly the lag problem this
+      setup exists to avoid.
+
+  So getting this address right is not a detail. Do it before anything else.
 
   Check the current IP - open Command Prompt and type:
 
@@ -43,9 +55,13 @@ A1. Set the laptop IP address to 192.168.1.6
 
   If it says something else, do ONE of these:
 
-    Option 1 (better) - reserve it on the router:
+    Option 1 (BEST - do this one if you can) - reserve it on the router:
       Log into the Wi-Fi router admin page, find "DHCP Reservation" or
       "Static Lease", and bind the laptop Wi-Fi MAC address to 192.168.1.6.
+
+      This is worth the effort: it survives reboots and moving to a
+      different venue, so the certificate keeps working permanently and
+      nobody has to think about this again.
 
     Option 2 - set it on the laptop:
       Settings -> Network & Internet -> Wi-Fi -> Hardware properties
@@ -55,6 +71,11 @@ A1. Set the laptop IP address to 192.168.1.6
          Gateway         (your router IP, usually 192.168.1.1)
 
   Re-run ipconfig and confirm it now reads 192.168.1.6.
+
+  NOTE: some routers hand out 192.168.0.x instead of 192.168.1.x. If yours
+  does, you cannot simply set the laptop to 192.168.1.6 - it will not be
+  reachable. Either change the router LAN subnet to 192.168.1.x, or go to
+  APPENDIX 1 and make a new certificate.
 
   >> If you truly cannot use 192.168.1.6, stop and read APPENDIX 1 at the
      bottom. A new certificate has to be made. Do not skip this.
@@ -378,6 +399,14 @@ B6. Tips for doing 70 of them
       The laptop IP changed. Set it back to 192.168.1.6 (A1) or make the
       router reservation permanent.
 
+  openssl says: Can't open "C:\Apache24\conf/openssl.cnf"
+      Only relevant if you are doing APPENDIX 1. You missed the
+      set OPENSSL_CONF=... line. See Appendix 1 step 1.
+
+  openssl is not recognised as a command
+      You are not in C:\xampp\apache\bin. Run the cd line first.
+      openssl is not on the system PATH - it only works from that folder.
+
 
 ================================================================================
   APPENDIX 1 - IF YOU CANNOT USE 192.168.1.6
@@ -386,17 +415,46 @@ B6. Tips for doing 70 of them
   The supplied certificate is issued for 192.168.1.6 only. For any other
   address you must generate a new one.
 
-  1. Open Command Prompt in  C:\xampp\apache\bin  and run this, replacing
-     BOTH copies of the IP with your actual one:
+  1. Open Command Prompt (not PowerShell) and run these lines. Replace
+     BOTH copies of 192.168.1.50 with your actual IP.
+
+     Type them one at a time, in this order:
+
+         cd C:\xampp\apache\bin
+
+         set OPENSSL_CONF=C:\xampp\apache\conf\openssl.cnf
 
          openssl req -x509 -nodes -days 825 -newkey rsa:2048 ^
            -keyout tide.key -out tide.crt ^
            -subj "/CN=192.168.1.50" ^
            -addext "subjectAltName=IP:192.168.1.50"
 
-     The subjectAltName part is NOT optional. Modern Chrome ignores the
-     CN field completely and only looks at subjectAltName. Without it the
-     tablets reject the certificate no matter what else you do.
+     *** The "set OPENSSL_CONF" line is REQUIRED. ***
+     XAMPP openssl looks for its config in C:\Apache24\conf\openssl.cnf,
+     which does not exist in a XAMPP install. Without that line you get:
+
+         Can't open "C:\Apache24\conf/openssl.cnf" for reading
+
+     That line points it at the config XAMPP actually ships. It only
+     applies to the current Command Prompt window, so if you close the
+     window you must set it again.
+
+     The subjectAltName part is NOT optional either. Modern Chrome ignores
+     the CN field completely and only looks at subjectAltName. Without it
+     the tablets reject the certificate no matter what else you do.
+
+  1b. Check it came out right before going any further:
+
+         openssl x509 -in tide.crt -noout -ext subjectAltName
+
+      It must print your IP, like:
+
+         X509v3 Subject Alternative Name:
+             IP Address:192.168.1.50
+
+      If it prints nothing or errors, the certificate is no good - redo
+      step 1. Do not continue with a bad certificate; everything past
+      this point will fail in confusing ways.
 
   2. Copy the new tide.crt and tide.key into ssl.crt and ssl.key as in A4.
 
