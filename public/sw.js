@@ -64,7 +64,22 @@ self.addEventListener('install', (event) => {
   // a kiosk has one tab and we want the cache live on first load.
   self.skipWaiting()
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(['./', './index.html']))
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE)
+      const shell = self.__MEDIA_MANIFEST?.shell ?? ['./', './index.html']
+      // Individually, not addAll: one asset failing must not abort the
+      // whole shell precache and leave the tablet with nothing.
+      await Promise.all(
+        shell.map(async (path) => {
+          try {
+            const response = await fetch(path, { cache: 'reload' })
+            if (response.ok) await cache.put(path, response)
+          } catch {
+            // Retried on demand by the fetch handler below.
+          }
+        })
+      )
+    })()
   )
 })
 
@@ -107,6 +122,15 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
+  // Built assets carry a content hash in the filename, so a cached one can
+  // never be stale - a code change produces a different name. Cache-first
+  // keeps lazily-loaded route chunks working when the laptop is briefly
+  // unreachable, which is otherwise a blank screen on the tablet.
+  if (url.pathname.includes('/assets/')) {
+    event.respondWith(serveAsset(request))
+    return
+  }
+
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(async () => {
@@ -116,6 +140,17 @@ self.addEventListener('fetch', (event) => {
     )
   }
 })
+
+/** Content-hashed build assets: cache-first, filled in on first miss. */
+async function serveAsset(request) {
+  const cache = await caches.open(SHELL_CACHE)
+  const cached = await cache.match(request)
+  if (cached) return cached
+
+  const response = await fetch(request)
+  if (response.ok) cache.put(request, response.clone())
+  return response
+}
 
 async function serveMedia(request) {
   const cache = await caches.open(MEDIA_CACHE)
