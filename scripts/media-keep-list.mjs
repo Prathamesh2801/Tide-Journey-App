@@ -64,6 +64,13 @@ export async function buildKeepList() {
     keep.add(`retail/${name}.mp4`)
   }
 
+  // iVideo adverts: each name yields the film and its poster frame.
+  const ivideos = await readSource('src/experiences/ivideo/data/ivideos.js')
+  for (const [, name] of ivideos.matchAll(/name:\s*['"]([^'"]+)['"]/g)) {
+    keep.add(`ivideo/${name}.mp4`)
+    keep.add(`ivideo/posters/${name}.jpg`)
+  }
+
   if (keep.size === 0) {
     throw new Error('Keep-list is empty - refusing to prune every media file')
   }
