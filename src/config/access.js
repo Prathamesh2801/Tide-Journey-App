@@ -14,11 +14,11 @@
  * show floor, nothing more.
  */
 export const EXPERIENCE_PASSCODES = {
-  "app-01": "01",
-  "app-02": "02",
-  "app-03": "03",
-  "app-04": "04",
-  "app-05": "05",
+  "app-01": "FRESHFEED", // Social Media Maximization
+  "app-02": "TIDETWIST", // Disruptive Social Activations
+  "app-03": "ANDARSECLEAN", // Retail Zone
+  "app-04": "DEEPCLEAN", // Television & iVideo
+  "app-05": "TIDEWAVE", // Brochure
 };
 
 /** How long an unlocked experience stays unlocked, in milliseconds. */

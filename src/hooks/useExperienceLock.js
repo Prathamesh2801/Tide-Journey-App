@@ -50,8 +50,18 @@ export function useExperienceLock(experienceId) {
     setUnlocked(true)
   }, [experienceId])
 
+  /**
+   * Text codes are matched case-insensitively and ignoring surrounding
+   * whitespace. On the tablets the soft keyboard starts lowercase, may
+   * auto-capitalise the first letter, and swipe input often appends a
+   * trailing space - none of which should read as a wrong code to a
+   * presenter who typed the right word.
+   */
   const verify = useCallback(
-    (attempt) => attempt === passcode,
+    (attempt) =>
+      typeof attempt === 'string' &&
+      typeof passcode === 'string' &&
+      attempt.trim().toUpperCase() === passcode.trim().toUpperCase(),
     [passcode]
   )
 

@@ -104,6 +104,16 @@ export default function PasscodeScreen({
                 type="password"
                 value={entry}
                 autoFocus
+                /* The codes are single uppercase words. Android's
+                   keyboard otherwise starts lowercase and offers
+                   autocorrect, which turns a correct code into a
+                   rejected one. Matching is case-insensitive anyway;
+                   these just make the keyboard agree with what is
+                   printed on the card. */
+                autoCapitalize="characters"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck="false"
                 onChange={(event) => {
                   setEntry(event.target.value)
                   setError(false)
