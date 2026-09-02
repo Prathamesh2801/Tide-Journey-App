@@ -74,6 +74,28 @@ export function useAudioPlayer(tracks) {
     [play]
   )
 
+  /**
+   * Picking a track from the list.
+   *
+   * Choosing a different track always starts it; only tapping the one
+   * already playing pauses. `toggle` cannot do this - it decides from the
+   * element's current state, so selecting the other track compared
+   * against the previous one and played the wrong clip.
+   */
+  const select = useCallback(
+    (track) => {
+      const el = audioRef.current
+      if (!el || !track) return
+      if (el.dataset.trackId === track.id) {
+        if (el.paused) play(track)
+        else el.pause()
+        return
+      }
+      play(track)
+    },
+    [play]
+  )
+
   const seek = useCallback((seconds) => {
     const el = audioRef.current
     if (!el || !Number.isFinite(seconds)) return
@@ -100,6 +122,7 @@ export function useAudioPlayer(tracks) {
     duration,
     play,
     toggle,
+    select,
     seek,
     stop,
   }

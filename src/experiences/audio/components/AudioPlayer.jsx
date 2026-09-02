@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { MdPlayArrow, MdPause, MdReplay10, MdForward10 } from 'react-icons/md'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
 import AudioVisualizer from './AudioVisualizer'
+import ErrorBoundary from '../../../components/common/ErrorBoundary'
 import TrackList from './TrackList'
 
 function formatTime(seconds) {
@@ -28,6 +29,7 @@ export default function AudioPlayer({ tracks }) {
     currentTime,
     duration,
     toggle,
+    select,
     seek,
   } = useAudioPlayer(tracks)
 
@@ -45,19 +47,15 @@ export default function AudioPlayer({ tracks }) {
       <section className="flex flex-col items-center gap-5 rounded-3xl border border-border bg-surface p-8 shadow-sm">
         <div className="h-28 w-full sm:h-32">
           {isPlaying ? (
-            <AudioVisualizer audioRef={audioRef} isPlaying={isPlaying} />
+            /* Boundary because the visualiser touches Web Audio, whose
+               failures are throws rather than return values. The bars are
+               decoration; losing them must never cost the visitor the
+               screen. Falls back to the same resting row shown below. */
+            <ErrorBoundary fallback={<RestingBars />}>
+              <AudioVisualizer audioRef={audioRef} isPlaying={isPlaying} />
+            </ErrorBoundary>
           ) : (
-            <div className="flex h-full items-end justify-center gap-1.5">
-              {/* Resting state: a static bar row so the panel does not
-                  collapse to empty space when nothing is playing. */}
-              {Array.from({ length: 32 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="w-2 rounded-full bg-brand-100"
-                  style={{ height: `${18 + Math.abs(Math.sin(i * 0.7)) * 55}%` }}
-                />
-              ))}
-            </div>
+            <RestingBars />
           )}
         </div>
 
@@ -118,7 +116,12 @@ export default function AudioPlayer({ tracks }) {
         tracks={tracks}
         currentId={currentId}
         isPlaying={isPlaying}
-        onSelect={toggle}
+        /* `select`, not `toggle`. Toggling is right for the transport
+           button but wrong for a list: picking a different track must
+           always start it. Wired to toggle, choosing the other track
+           read the element's previous state and played the wrong clip -
+           the list ran one click behind. */
+        onSelect={select}
       />
     </div>
   )
@@ -136,5 +139,23 @@ function TransportButton({ label, onClick, children }) {
     >
       {children}
     </motion.button>
+  )
+}
+
+/**
+ * Static bar row shown when nothing is playing, and as the visualiser's
+ * fallback if Web Audio fails - the panel keeps its shape either way.
+ */
+function RestingBars() {
+  return (
+    <div className="flex h-full items-end justify-center gap-1.5">
+      {Array.from({ length: 32 }).map((_, i) => (
+        <span
+          key={i}
+          className="w-2 rounded-full bg-brand-100"
+          style={{ height: `${18 + Math.abs(Math.sin(i * 0.7)) * 55}%` }}
+        />
+      ))}
+    </div>
   )
 }

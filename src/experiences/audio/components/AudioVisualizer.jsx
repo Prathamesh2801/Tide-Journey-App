@@ -3,6 +3,45 @@ import { useEffect, useRef } from 'react'
 const BAR_COUNT = 48
 
 /**
+ * Audio graphs, keyed by the media element they are attached to.
+ *
+ * `createMediaElementSource` may be called only ONCE per element for the
+ * lifetime of the page - a second call throws InvalidStateError, which
+ * takes the whole screen down with it. A ref cannot hold this: the
+ * visualiser is mounted only while playing, so switching tracks unmounts
+ * and remounts it and a ref starts empty again. Caching outside the
+ * component survives that.
+ *
+ * A WeakMap so a discarded element does not keep its graph alive.
+ */
+const graphs = new WeakMap()
+
+function getGraph(audioEl) {
+  const existing = graphs.get(audioEl)
+  if (existing) return existing
+
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextCtor) return null
+
+  try {
+    const context = new AudioContextCtor()
+    const analyser = context.createAnalyser()
+    analyser.fftSize = 1024
+    analyser.smoothingTimeConstant = 0.8
+    context.createMediaElementSource(audioEl).connect(analyser)
+    analyser.connect(context.destination)
+    const graph = { context, analyser }
+    graphs.set(audioEl, graph)
+    return graph
+  } catch {
+    // Web Audio unavailable or the element is already attached to a
+    // context we cannot reach. Playback still works; only the bars are
+    // lost, which must never cost the visitor the screen.
+    return null
+  }
+}
+
+/**
  * Live frequency bars drawn from the playing audio element.
  *
  * Draws to a canvas rather than animating DOM nodes: 48 bars as elements
@@ -10,13 +49,11 @@ const BAR_COUNT = 48
  * loop only runs while audio is playing and is cancelled on pause, so a
  * kiosk sitting idle costs nothing.
  *
- * The AnalyserNode is created once and reused - a MediaElementSource can
- * only be attached to an element once per AudioContext, so re-creating it
- * on every play would throw.
+ * The audio graph lives in a module-level WeakMap, not a ref - see the
+ * note on `graphs` below for why a ref is not enough.
  */
 export default function AudioVisualizer({ audioRef, isPlaying, className = '' }) {
   const canvasRef = useRef(null)
-  const analyserRef = useRef(null)
   const frameRef = useRef(0)
 
   useEffect(() => {
@@ -24,22 +61,13 @@ export default function AudioVisualizer({ audioRef, isPlaying, className = '' })
     const canvas = canvasRef.current
     if (!audioEl || !canvas || !isPlaying) return undefined
 
-    // Lazily build the graph on first play: browsers only allow an
-    // AudioContext to start after a user gesture.
-    if (!analyserRef.current) {
-      const AudioContextCtor = window.AudioContext || window.webkitAudioContext
-      if (!AudioContextCtor) return undefined
+    // Built lazily on first play (browsers only allow an AudioContext to
+    // start after a user gesture) and then reused for the life of the
+    // element, however many times this component mounts.
+    const graph = getGraph(audioEl)
+    if (!graph) return undefined
 
-      const context = new AudioContextCtor()
-      const analyser = context.createAnalyser()
-      analyser.fftSize = 1024
-      analyser.smoothingTimeConstant = 0.8
-      context.createMediaElementSource(audioEl).connect(analyser)
-      analyser.connect(context.destination)
-      analyserRef.current = { context, analyser }
-    }
-
-    const { context, analyser } = analyserRef.current
+    const { context, analyser } = graph
     if (context.state === 'suspended') context.resume()
 
     const ctx = canvas.getContext('2d')
