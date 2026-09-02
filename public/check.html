@@ -82,7 +82,7 @@ if ('serviceWorker' in navigator) {
 
 // Video decode probe: play a real clip and count dropped frames.
 const v = document.createElement('video');
-v.src = './media/social/videos/kol-4.mp4';
+v.src = './media/social/videos/reel-0.mp4';
 v.muted = true; v.playsInline = true;
 v.style.cssText = 'width:1px;height:1px;position:absolute;opacity:0';
 document.body.appendChild(v);
@@ -94,7 +94,7 @@ v.play().then(() => {
     const played = v.currentTime;
     const ratio = played / wall;
     let cls = ratio > 0.95 ? 'ok' : ratio > 0.85 ? 'warn' : 'bad';
-    row('Video playback (kol-4, 6s sample)',
+    row('Video playback (reel-0, 6s sample)',
         `advanced ${played.toFixed(1)}s in ${wall.toFixed(1)}s — ${(ratio*100).toFixed(0)}% real time`, cls);
     if (q0 && v.getVideoPlaybackQuality) {
       const q1 = v.getVideoPlaybackQuality();
