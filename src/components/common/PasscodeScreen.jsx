@@ -76,13 +76,17 @@ export default function PasscodeScreen({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="flex w-full max-w-md flex-col items-center"
+          /* White panel rather than text straight onto the orange: the
+             subtitle measured 1.75:1 and the number 1.24:1 against the
+             shell background, far under the 4.5:1 floor. It also matches
+             the launcher, where every piece of content sits on a card. */
+          className="flex w-full max-w-md flex-col items-center rounded-3xl border-2 border-shell-card-edge bg-surface px-6 py-10 shadow-xl shadow-black/20 sm:px-10"
         >
           <span className="flex size-16 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-md shadow-brand-600/25">
             <MdLockOutline className="text-3xl" aria-hidden="true" />
           </span>
 
-          <p className="mt-5 text-sm font-bold tracking-[0.2em] text-brand-300">
+          <p className="mt-5 text-base font-bold tracking-[0.2em] text-shell-number">
             {experience.number}
           </p>
           <h1 className="mt-1 text-center text-3xl font-semibold text-text">

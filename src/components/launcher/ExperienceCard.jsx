@@ -24,7 +24,7 @@ export default function ExperienceCard({ experience, index, className = "" }) {
       transition={{ duration: 0.32, delay: index * 0.06, ease: "easeOut" }}
       whileTap={{ scale: 0.97 }}
       style={{ padding: "clamp(0.5rem, 1vh, 1rem)" }}
-      className={`flex h-full w-full flex-col items-center justify-center gap-[clamp(0.9rem,1.8vh,1.5rem)] rounded-3xl border border-border bg-surface text-center shadow-sm transition-colors active:bg-brand-50 ${className}`}
+      className={`flex h-full w-full flex-col items-center justify-center gap-[clamp(0.9rem,1.8vh,1.5rem)] rounded-3xl border-2 border-shell-card-edge bg-surface text-center shadow-lg shadow-black/15 transition-colors active:bg-brand-50 ${className}`}
     >
       <img
         src={experience.art}
@@ -35,7 +35,7 @@ export default function ExperienceCard({ experience, index, className = "" }) {
       />
 
       <span className="flex flex-col gap-0.5">
-        <span className="text-xs font-bold tracking-[0.2em] text-brand-300">
+        <span className="text-base font-bold tracking-[0.2em] text-shell-number">
           {experience.number}
         </span>
         <span

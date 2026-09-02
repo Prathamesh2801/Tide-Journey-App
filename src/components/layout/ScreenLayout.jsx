@@ -23,6 +23,7 @@ export default function ScreenLayout({
   footer,
   ambient = false,
   fill = false,
+  headerBand = false,
   children,
 }) {
   return (
@@ -32,7 +33,11 @@ export default function ScreenLayout({
       }`}
     >
       {header ? (
-        <header className="shrink-0 px-6 pt-6 pb-4 sm:px-10 sm:pt-8 sm:pb-6">
+        <header
+          className={`shrink-0 px-6 pt-6 pb-4 sm:px-10 sm:pt-8 sm:pb-6 ${
+            headerBand ? 'bg-shell-header' : ''
+          }`}
+        >
           {header}
         </header>
       ) : null}

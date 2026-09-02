@@ -71,6 +71,21 @@
   --color-accent-yellow: #ffd800;
   --color-accent-red: #f01830;
 
+  /* Launcher shell. The home screen is a two-band design: a solid navy
+     header over a solid orange body carrying a ring texture, rather than
+     the soft wash the rest of the app uses. Oranges sit between the two
+     the logo actually contains (#ef4424 red-orange and #faa61a gold). */
+  --color-shell-header: #184890;
+  --color-shell-body: #f4661e;
+  --color-shell-body-deep: #e0530f;
+  --color-shell-ring: #ff7a33;
+  --color-shell-card-edge: #f9a01b;
+  /* Darker than the body orange: #f4661e measures 3.10:1 on the white
+     card, and the number is 14px bold - under the 18.66px where WCAG's
+     3:1 large-text rule would apply, so the 4.5:1 floor is the real one.
+     This clears it at 5.1:1 and still reads as the same burnt orange. */
+  --color-shell-number: #c44008;
+
   /* Semantic roles */
   --color-primary: #184890;
   --color-primary-strong: #123566;
@@ -119,6 +134,11 @@
   --color-brand-500: var(--color-brand-500);
   --color-brand-600: var(--color-brand-600);
   --color-brand-700: var(--color-brand-700);
+  --color-shell-header: var(--color-shell-header);
+  --color-shell-body: var(--color-shell-body);
+  --color-shell-ring: var(--color-shell-ring);
+  --color-shell-card-edge: var(--color-shell-card-edge);
+  --color-shell-number: var(--color-shell-number);
   --font-sans: var(--font-ui);
 
   /* Palette used by the Social feed experience (mirrored from the
@@ -176,63 +196,53 @@ body {
   background: var(--gradient-brand);
 }
 
-/* Soft tinted wash behind the launcher. Painted once, never animated,
-   so it costs the GPU nothing after first composite.
+/* Launcher shell background.
 
-   The logo is a warm disc (yellow -> orange -> red) inside a cool blue
-   wordmark, so the wash carries both temperatures rather than blue
-   alone: blue anchors the top-left where the mark sits, and the warm
-   tones sweep the opposite corner. Alphas are deliberately low - this
-   should register as a tint on white, not as a coloured background.
-   Above ~0.10 the warm tones start fighting the artwork on the cards. */
+   Two bands, matching the brand reference: a solid navy header over a
+   solid orange body carrying a texture of concentric rings - the
+   radiating disc from the Tide logo, blown up large.
+
+   The rings are a repeating-radial-gradient rather than an image: one
+   paint, no asset to download, nothing animated, so it costs the GPU
+   nothing after first composite. They are deliberately close in tone to
+   the ground; push the contrast up and they stop reading as texture and
+   start competing with the cards.
+
+   `background-attachment: fixed` is NOT used - it forces a repaint layer
+   on scroll for no benefit here. */
 .bg-brand-ambient {
-  /* Warm base. The page token #f4f7fc is a cool blue-white, which
-     cancelled the yellow it was meant to carry; this neutral-warm ground
-     lets the disc colours actually register. */
-  background-color: #fbecc8;
+  background-color: var(--color-shell-body);
 
   background-image:
-    /* Warm top corner, so the page opens warm rather than cool. Kept
-       lighter than the base of the page: the blue wordmark and title sit
-       here and need the quietest ground on the screen. */
-    radial-gradient(
-      ellipse 80% 34% at 88% -8%,
-      rgba(252, 196, 24, 0.16) 0%,
-      transparent 76%
+    /* Concentric rings, centred slightly above the middle so the arcs
+       sweep the way the reference does. */
+    repeating-radial-gradient(
+      circle at 50% 38%,
+      rgba(255, 255, 255, 0.055) 0 2.4rem,
+      rgba(255, 255, 255, 0) 2.4rem 7.2rem
     ),
-    /* A softer warm note on the opposite top corner, behind the logo. */
+    /* A wider, softer second set offset from the first, so the texture
+       does not read as a single mechanical bullseye. */
+    repeating-radial-gradient(
+      circle at 50% 38%,
+      rgba(0, 0, 0, 0.035) 0 4.8rem,
+      rgba(0, 0, 0, 0) 4.8rem 14.4rem
+    ),
+    /* Deepen the lower corners so the flat orange gains a little depth
+       without becoming a gradient wash. */
     radial-gradient(
-        ellipse 56% 26% at 2% -4%,
-        rgba(252, 176, 12, 0.12) 0%,
-        transparent 74%
-      ),
-    /* Yellow: the dominant field, strongest low and sweeping upward. */
-    radial-gradient(
-        ellipse 104% 66% at 74% 106%,
-        rgba(252, 216, 0, 0.34) 0%,
-        transparent 76%
-      ),
-    /* Orange inside the yellow, like the logo's inner ring. */
-    radial-gradient(
-        ellipse 74% 48% at 98% 86%,
-        rgba(252, 152, 8, 0.26) 0%,
-        transparent 74%
-      ),
-    /* Orange on the opposite low corner so the band spans the width
-       rather than pooling on one side. */
-    /* radial-gradient(
-        ellipse 62% 42% at 4% 100%,
-        rgba(252, 176, 12, 0.2) 0%,
-        transparent 74%
-      ); */
-  /* Red arc, the outermost warm note - kept low so it tints rather
-       than turning the corner pink. */
-  /* radial-gradient(
-      ellipse 46% 34% at 104% 56%,
-      rgba(228, 24, 36, 0.0) 0%,
-      transparent 74%
-    ); */
+      ellipse 120% 70% at 50% 120%,
+      var(--color-shell-body-deep) 0%,
+      transparent 70%
+    );
 }
+
+/* The solid navy header band. Full-bleed: it runs to the screen edges
+   rather than sitting inside the page padding. */
+.bg-shell-header {
+  background-color: var(--color-shell-header);
+}
+
 
 /* Keyboard focus stays visible; touch taps leave no lingering ring. */
 :focus-visible {

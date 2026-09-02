@@ -8,8 +8,10 @@ export default function Launcher() {
   return (
     <ScreenLayout
       ambient
+      headerBand
       header={
         <ScreenHeader
+          onBand
           title={APP_TITLE}
           subtitle={APP_SUBTITLE}
           logo={APP_LOGO}

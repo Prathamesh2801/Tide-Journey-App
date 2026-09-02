@@ -11,7 +11,7 @@
  * the logo and buttons happen to leave. Centring with `justify-between`
  * alone drifts off-centre as soon as the two sides differ in width.
  */
-export default function ScreenHeader({ title, subtitle, actions, logo }) {
+export default function ScreenHeader({ title, subtitle, actions, logo, onBand = false }) {
   if (logo) {
     return (
       <div className="flex items-center gap-4">
@@ -28,11 +28,21 @@ export default function ScreenHeader({ title, subtitle, actions, logo }) {
         {/* Centre: title. min-w-0 lets a long title wrap instead of
             shoving the side slots out of alignment. */}
         <div className="min-w-0 flex-1 text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">
+          <h1
+            className={`text-4xl font-bold tracking-tight sm:text-5xl ${
+              onBand ? 'text-white' : 'text-primary'
+            }`}
+          >
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-2 text-lg text-muted sm:text-xl">{subtitle}</p>
+            <p
+              className={`mt-2 text-lg sm:text-xl ${
+                onBand ? 'text-white/85' : 'text-muted'
+              }`}
+            >
+              {subtitle}
+            </p>
           ) : null}
         </div>
 
