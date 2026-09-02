@@ -41,13 +41,19 @@ const keep = [...(await buildKeepList())].sort()
 // them, so the worker's cache keys line up with real fetches.
 const files = keep.map((path) => `./media/${path}`)
 
+// Sizes are collected per file, not just totalled, because they go into
+// the version hash below.
 let bytes = 0
+const sizes = []
 for (const path of keep) {
+  let size = 0
   try {
-    bytes += (await stat(join(DIST, 'media', path))).size
+    size = (await stat(join(DIST, 'media', path))).size
   } catch {
     // Pruned or not yet built - the worker tolerates a miss at runtime.
   }
+  bytes += size
+  sizes.push(`${path}:${size}`)
 }
 
 const shell = await shellFiles()
@@ -55,8 +61,14 @@ const shell = await shellFiles()
 // The version covers the shell too: asset filenames are content-hashed, so
 // a code change alters this list and correctly invalidates the old cache,
 // while a rebuild with no changes leaves the tablets' cache untouched.
+//
+// Media filenames carry no such hash, so their sizes are folded in as
+// well. Re-encoding a clip in place otherwise left this version identical
+// and every already-provisioned tablet kept serving the superseded file
+// from cache-first storage - a media fix that could never reach a device
+// that had already cached the old one.
 const version = createHash('sha1')
-  .update([...files, ...shell].join('\n'))
+  .update([...sizes, ...shell].join('\n'))
   .digest('hex')
   .slice(0, 12)
 
