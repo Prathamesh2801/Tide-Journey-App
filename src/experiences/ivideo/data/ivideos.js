@@ -8,24 +8,25 @@
  */
 export const IVIDEOS = [
   {
-    id: 'bigg-boss',
-    name: 'bigg-boss',
-    title: 'Bigg Boss',
-    subtitle: 'Television spot',
-    duration: 10,
+    id: "all-is-well",
+    name: "all-is-well",
+    title: "All Is Well",
+    subtitle: "Hindi",
+    duration: 25,
   },
+
   {
-    id: 'tide-shadow',
-    name: 'tide-shadow',
-    title: 'Tide Shadow',
-    subtitle: 'Deep Clean · new pack',
+    id: "tide-shadow",
+    name: "tide-shadow",
+    title: "Tide Shadow",
+    subtitle: "Deep Clean · new pack",
     duration: 15,
   },
   {
-    id: 'all-is-well',
-    name: 'all-is-well',
-    title: 'All Is Well',
-    subtitle: 'Hindi',
-    duration: 25,
+    id: "bigg-boss",
+    name: "bigg-boss",
+    title: "Bigg Boss",
+    subtitle: "Television spot",
+    duration: 10,
   },
-]
+];
