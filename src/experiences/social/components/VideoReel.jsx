@@ -173,36 +173,45 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
       className="relative h-full w-full select-none overflow-hidden bg-tide-navy"
       onClick={handleTap}
     >
-      {!posterLoaded && <div className="skeleton absolute inset-0" aria-hidden="true" />}
-
-      {/* Blurred fill behind the media. The clips are 9:16 but the tablet
-          viewport is nearer 3:4, so containing them leaves bars - this is
-          how Reels/Shorts fill that space instead of cropping the frame. */}
-      <img
-        src={post.thumb}
-        alt=""
-        aria-hidden="true"
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        className={`pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl transition-opacity duration-300 ${
-          posterLoaded ? "opacity-60" : "opacity-0"
-        }`}
-      />
-
-      <img
-        src={post.thumb}
-        alt=""
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-        onLoad={() => setPosterLoaded(true)}
-        className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
-          posterLoaded ? "opacity-100" : "opacity-0"
-        } ${started ? "pointer-events-none" : ""}`}
-      />
-
+      {/* Nothing inside a reel renders until it is near the viewport.
+          `started` already gated the <video>; everything else used to stay
+          mounted for every post the feed had ever loaded - up to 96 of
+          them. That left ~90 full-screen shimmer skeletons repainting
+          (a lazy poster never loads, so posterLoaded never flips), plus a
+          40px blur layer and five backdrop-filters each. The feed got
+          progressively slower the further it was scrolled, while the
+          single-video experiences on the same tablet stayed smooth. */}
       {started && (
+        <>
+        {!posterLoaded && <div className="skeleton absolute inset-0" aria-hidden="true" />}
+
+        {/* Blurred fill behind the media. The clips are 9:16 but the tablet
+            viewport is nearer 3:4, so containing them leaves bars - this is
+            how Reels/Shorts fill that space instead of cropping the frame. */}
+        <img
+          src={post.thumb}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          className={`pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover blur-2xl transition-opacity duration-300 ${
+            posterLoaded ? "opacity-60" : "opacity-0"
+          }`}
+        />
+
+        <img
+          src={post.thumb}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          draggable={false}
+          onLoad={() => setPosterLoaded(true)}
+          className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-300 ${
+            posterLoaded ? "opacity-100" : "opacity-0"
+          } pointer-events-none`}
+        />
+
         <video
           ref={videoRef}
           src={post.src}
@@ -212,45 +221,43 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
           loop
           className="absolute inset-0 h-full w-full object-contain"
         />
-      )}
 
-      {isBuffering && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
-          <span className="h-8 w-8 animate-spin rounded-full border-[0.1875rem] border-white/30 border-t-white" />
-        </div>
-      )}
-
-      {!isBuffering && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-opacity duration-200"
-            style={{ opacity: isPlaying ? 0 : 1 }}
-          >
-            {isPlaying ? (
-              <FiPause size="1.5rem" />
-            ) : (
-              <FiPlay size="1.75rem" className="translate-x-0.5" />
-            )}
-          </span>
-        </div>
-      )}
-
-      <AnimatePresence>
-        {burstKey > 0 && (
-          <motion.div
-            key={burstKey}
-            initial={{ opacity: 0, scale: 0.2 }}
-            animate={{ opacity: [0, 1, 1, 1, 0], scale: [0.2, 1.85, 1.25, 1.5, 1.35] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, times: [0, 0.35, 0.55, 0.75, 1], ease: "easeOut" }}
-            className="pointer-events-none absolute inset-0 flex items-center justify-center"
-          >
-            <FiHeart className="fill-[#ff3040] text-[#ff3040] drop-shadow-[0_4px_18px_rgba(255,48,64,0.55)]" size="8.5rem" />
-          </motion.div>
+        {isBuffering && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
+            <span className="h-8 w-8 animate-spin rounded-full border-[0.1875rem] border-white/30 border-t-white" />
+          </div>
         )}
-      </AnimatePresence>
 
-      {started && (
+        {!isBuffering && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <span
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-black/60 text-white transition-opacity duration-200"
+              style={{ opacity: isPlaying ? 0 : 1 }}
+            >
+              {isPlaying ? (
+                <FiPause size="1.5rem" />
+              ) : (
+                <FiPlay size="1.75rem" className="translate-x-0.5" />
+              )}
+            </span>
+          </div>
+        )}
+
+        <AnimatePresence>
+          {burstKey > 0 && (
+            <motion.div
+              key={burstKey}
+              initial={{ opacity: 0, scale: 0.2 }}
+              animate={{ opacity: [0, 1, 1, 1, 0], scale: [0.2, 1.85, 1.25, 1.5, 1.35] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.9, times: [0, 0.35, 0.55, 0.75, 1], ease: "easeOut" }}
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            >
+              <FiHeart className="fill-[#ff3040] text-[#ff3040] drop-shadow-[0_4px_18px_rgba(255,48,64,0.55)]" size="8.5rem" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <button
           type="button"
           aria-label={isMuted ? "Unmute" : "Mute"}
@@ -259,21 +266,22 @@ function VideoReel({ post, liked, likeCount, onToggleLike }) {
         >
           {isMuted ? <FiVolumeX size="1.125rem" /> : <FiVolume2 size="1.125rem" />}
         </button>
+
+        <ReelActions
+          postId={post.id}
+          liked={liked}
+          likeCount={likeCount}
+          onToggleLike={() => {
+            onToggleLike();
+            if (!liked) triggerBurst();
+          }}
+          burstKey={burstKey}
+          className="absolute bottom-32 right-3"
+        />
+
+        <ReelInfo postId={post.id} className="absolute bottom-32 left-3 right-20" />
+        </>
       )}
-
-      <ReelActions
-        postId={post.id}
-        liked={liked}
-        likeCount={likeCount}
-        onToggleLike={() => {
-          onToggleLike();
-          if (!liked) triggerBurst();
-        }}
-        burstKey={burstKey}
-        className="absolute bottom-32 right-3"
-      />
-
-      <ReelInfo postId={post.id} className="absolute bottom-32 left-3 right-20" />
     </article>
   );
 }

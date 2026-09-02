@@ -14,7 +14,7 @@ function pseudoCount(seed, min, max) {
 function StaticAction({ icon: Icon, count }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white">
         <Icon size="1.375rem" />
       </span>
       <span className="text-[0.6875rem] font-semibold text-white drop-shadow-md">{count}</span>

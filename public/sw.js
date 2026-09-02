@@ -176,13 +176,25 @@ async function serveMedia(request) {
   return response
 }
 
-/** Turn a cached 200 into the 206 a media element expects. */
+/**
+ * Turn a cached 200 into the 206 a media element expects.
+ *
+ * Sliced as a Blob, never an ArrayBuffer. A <video> issues many ranged
+ * requests per clip, and reading the whole entry into an ArrayBuffer meant
+ * allocating and copying the entire file - up to 17 MB - to answer each
+ * one. On a 4 GB tablet that showed up as a reel buffering for a moment
+ * despite already being cached. Blob.slice is a lazy view over the stored
+ * body, so nothing is read until the response streams.
+ *
+ * The range header is parsed before the body is touched: `cached` can only
+ * be returned untouched while its body is still unread.
+ */
 async function buildRangeResponse(cached, rangeHeader) {
-  const buffer = await cached.arrayBuffer()
-  const total = buffer.byteLength
-
   const match = /bytes=(\d*)-(\d*)/.exec(rangeHeader)
   if (!match) return cached
+
+  const blob = await cached.blob()
+  const total = blob.size
 
   const start = match[1] ? Number(match[1]) : 0
   const end = match[2] ? Math.min(Number(match[2]), total - 1) : total - 1
@@ -199,7 +211,7 @@ async function buildRangeResponse(cached, rangeHeader) {
   headers.set('Content-Length', String(end - start + 1))
   headers.set('Accept-Ranges', 'bytes')
 
-  return new Response(buffer.slice(start, end + 1), {
+  return new Response(blob.slice(start, end + 1), {
     status: 206,
     statusText: 'Partial Content',
     headers,

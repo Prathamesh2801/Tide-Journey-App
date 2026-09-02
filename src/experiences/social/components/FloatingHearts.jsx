@@ -151,7 +151,6 @@ export default function FloatingHearts({ burstKey, className = "" }) {
             <FiHeart
               size={`${heart.size}rem`}
               style={{ color: heart.color, fill: heart.color }}
-              className="drop-shadow-md"
             />
           </motion.span>
         ))}

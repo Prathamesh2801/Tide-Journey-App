@@ -24,7 +24,7 @@ export default function LikeButton({ liked, likeCount, onToggle, className = "" 
       <motion.span
         animate={liked ? { scale: [1, 1.4, 1] } : { scale: 1 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35 backdrop-blur-sm"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55"
       >
         <FiHeart
           size="1.375rem"
