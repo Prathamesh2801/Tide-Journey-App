@@ -17,6 +17,9 @@ const UNSUPPORTED = { status: 'unsupported', done: 0, total: 0 }
 const SUPPORTED =
   typeof navigator !== 'undefined' && 'serviceWorker' in navigator
 
+/** How long the "ready" confirmation stays on screen before retiring. */
+const DISMISS_AFTER_MS = 4000
+
 export function useMediaCache() {
   const [state, setState] = useState(SUPPORTED ? IDLE : UNSUPPORTED)
 
@@ -24,12 +27,34 @@ export function useMediaCache() {
     if (!SUPPORTED) return undefined
 
     let active = true
+    let dismissTimer
 
     const onMessage = (event) => {
       if (!active) return
-      const { type, done, total } = event.data ?? {}
-      if (type === 'cache-progress') setState({ status: 'caching', done, total })
-      if (type === 'cache-complete') setState({ status: 'ready', done, total })
+      const { type, done, total, downloaded } = event.data ?? {}
+
+      if (type === 'cache-progress') {
+        // A return visit reports 100% immediately with nothing left to
+        // fetch. Showing a progress pill for that is noise, so only
+        // surface it while there is real work happening.
+        if (done < total) setState({ status: 'caching', done, total })
+        return
+      }
+
+      if (type === 'cache-complete') {
+        // Nothing was downloaded - the tablet was already provisioned, so
+        // there is nothing to announce.
+        if (downloaded === 0) {
+          setState({ status: 'idle', done, total })
+          return
+        }
+        setState({ status: 'ready', done, total })
+        // Retire the badge rather than leaving it parked over every
+        // screen for the rest of the session.
+        dismissTimer = window.setTimeout(() => {
+          if (active) setState({ status: 'idle', done, total })
+        }, DISMISS_AFTER_MS)
+      }
     }
 
     navigator.serviceWorker.addEventListener('message', onMessage)
@@ -55,6 +80,7 @@ export function useMediaCache() {
 
     return () => {
       active = false
+      window.clearTimeout(dismissTimer)
       navigator.serviceWorker.removeEventListener('message', onMessage)
     }
   }, [])

@@ -7,7 +7,12 @@ import { useMediaCache } from '../../hooks/useMediaCache'
  *
  * Deliberately unobtrusive: the app is fully usable while this runs
  * (uncached files fall through to the network), so this informs rather
- * than blocks. It disappears a few seconds after completing.
+ * than blocks.
+ *
+ * Transient by design. useMediaCache returns to `idle` a few seconds
+ * after the copy completes, and never reports `ready` at all on a tablet
+ * that was already provisioned - otherwise the badge parks itself over
+ * every screen for the rest of the session, which is what it did before.
  */
 export default function CacheStatus() {
   const { status, done, total } = useMediaCache()

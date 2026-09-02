@@ -51,7 +51,10 @@ async function precacheMedia() {
     )
   }
 
-  broadcast({ type: 'cache-complete', done, total })
+  // `downloaded` lets the page tell a real first-run copy from a return
+  // visit where everything was already stored: a tablet that downloaded
+  // nothing should not be shown a "ready" badge it did not earn.
+  broadcast({ type: 'cache-complete', done, total, downloaded: pending.length })
 }
 
 async function broadcast(message) {
