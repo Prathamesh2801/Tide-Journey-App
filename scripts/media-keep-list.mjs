@@ -56,6 +56,14 @@ export async function buildKeepList() {
     }
   }
 
+  // Retail: a single looping film named in the experience module.
+  const retail = await readSource('src/experiences/retail/data/retailVideo.js')
+  for (const [, name] of retail.matchAll(
+    /RETAIL_VIDEO\s*=\s*['"]([^'"]+)['"]/g
+  )) {
+    keep.add(`retail/${name}.mp4`)
+  }
+
   if (keep.size === 0) {
     throw new Error('Keep-list is empty - refusing to prune every media file')
   }
